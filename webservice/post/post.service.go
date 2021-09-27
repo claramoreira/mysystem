@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"system/cors"
 )
 
 const postsPath = "posts"
@@ -27,7 +28,27 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
+	case http.MethodPost:
+		var post Post
+		err := json.NewDecoder(r.Body).Decode(&post)
+		if err != nil {
+			log.Print(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		_, err = insertPost(post)
+		if err != nil {
+			log.Print(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		w.WriteHeader(http.StatusCreated)
+	case http.MethodOptions:
+		return
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
+
 }
 
 func HandlePost(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +87,7 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 
 func SetupRoutes() {
 	postHandler := http.HandlerFunc(HandlePost)
-	http.Handle(fmt.Sprintf("/%s/", postsPath), postHandler)
+	http.Handle(fmt.Sprintf("/%s/", postsPath), cors.Middleware(postHandler))
 	postsHandler := http.HandlerFunc(HandlePosts)
-	http.Handle(fmt.Sprintf("/%s", postsPath), postsHandler)
+	http.Handle(fmt.Sprintf("/%s", postsPath), cors.Middleware(postsHandler))
 }

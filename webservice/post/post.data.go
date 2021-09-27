@@ -44,3 +44,19 @@ func getPost(postID int) (*Post, error) {
 	}
 	return post, nil
 }
+
+func insertPost(post Post) (int, error) {
+	result, err := database.DbConn.Exec(`INSERT INTO tbPost
+	(topic_id, created_date, created_by, post_content)
+	VALUES
+	(?, sysdate(), ?, ?)`,
+		post.TopicID, post.CreatedBy, post.PostContent)
+	if err != nil {
+		return 0, err
+	}
+	insertID, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return int(insertID), nil
+}
