@@ -82,6 +82,12 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
+	case http.MethodDelete:
+		removePost(postID)
+	case http.MethodOptions:
+		return
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 

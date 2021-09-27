@@ -7,5 +7,6 @@ CREATE TABLE go.tbUser (
 	user_avatar VARCHAR(100),
 	user_description TEXT,
 	created_date DATETIME NOT NULL,
+	updated_date DATETIME,
 	PRIMARY KEY (user_id)
 );

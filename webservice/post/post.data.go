@@ -45,6 +45,15 @@ func getPost(postID int) (*Post, error) {
 	return post, nil
 }
 
+func removePost(postID int) error {
+	_, err := database.DbConn.Query(`DELETE FROM tbPost where post_id = ?`,
+		postID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func insertPost(post Post) (int, error) {
 	result, err := database.DbConn.Exec(`INSERT INTO tbPost
 	(topic_id, created_date, created_by, post_content)

@@ -48,3 +48,50 @@ func getUser(userID int) (*User, error) {
 	}
 	return user, nil
 }
+
+func removeUser(userID int) error {
+	_, err := database.DbConn.Query(`DELETE FROM tbUser where user_id = ?`, userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func insertUser(user User) (int, error) {
+	result, err := database.DbConn.Exec(`INSERT INTO tbUser
+	(user_name, user_username, user_email, user_password, created_date)
+	VALUES
+	(?, ?, ?, ?, sysdate())`,
+		user.UserName, user.UserUsername, user.UserEmail, user.UserPassword)
+	if err != nil {
+		return 0, err
+	}
+	insertID, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return int(insertID), nil
+}
+
+func updateUser(user User) error {
+	_, err := database.DbConn.Exec(`UPDATE tbUser SET
+	user_name = ?,
+	user_username = ?,
+	user_email = ?,
+	user_password = ?,
+	user_avatar = ?,
+	user_description = ?,
+	updated_date = sysdate()
+	WHERE user_id=?`,
+		user.UserName,
+		user.UserUsername,
+		user.UserEmail,
+		user.UserPassword,
+		user.UserAvatar,
+		user.UserDescription,
+		user.UserID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
