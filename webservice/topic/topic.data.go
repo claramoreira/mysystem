@@ -45,6 +45,28 @@ func getTopic(topicID int) (*Topic, error) {
 	return topic, nil
 }
 
+func getTopicByCommunity(communityID int) ([]Topic, error) {
+	results, err := database.DbConn.Query(`
+	SELECT topic_id, community_id, created_date, created_by, topic_name
+	FROM tbTopic
+	WHERE community_id = ?`, communityID)
+	if err != nil {
+		return nil, err
+	}
+	defer results.Close()
+	topics := make([]Topic, 0)
+	for results.Next() {
+		var topic Topic
+		results.Scan(&topic.TopicID,
+			&topic.CommunityID,
+			&topic.CreatedDate,
+			&topic.CreatedBy,
+			&topic.TopicName)
+		topics = append(topics, topic)
+	}
+	return topics, nil
+}
+
 func removeTopic(topicID int) error {
 	_, err := database.DbConn.Query(`DELETE FROM tbTopic where topic_id = ?`,
 		topicID)

@@ -90,9 +90,44 @@ func HandleTopic(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func HandleTopicByCommunityID(w http.ResponseWriter, r *http.Request) {
+	urlPathSegments := strings.Split(r.URL.Path, fmt.Sprintf("/%s%s/", topicsPath, "bycommunity"))
+	if len(urlPathSegments[1:]) > 1 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	communityID, err := strconv.Atoi(urlPathSegments[len(urlPathSegments)-1])
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	switch r.Method {
+	case http.MethodGet:
+		topicList, err := getTopicByCommunity(communityID)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		j, err := json.Marshal(topicList)
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = w.Write(j)
+		if err != nil {
+			log.Fatal(err)
+		}
+	case http.MethodOptions:
+		return
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
 func SetupRoutes() {
 	topicsHandler := http.HandlerFunc(HandleTopics)
 	topicHandler := http.HandlerFunc(HandleTopic)
+	topicByCommunityHandler := http.HandlerFunc(HandleTopicByCommunityID)
 	http.Handle(fmt.Sprintf("/%s", topicsPath), cors.Middleware(topicsHandler))
 	http.Handle(fmt.Sprintf("/%s/", topicsPath), cors.Middleware(topicHandler))
+	http.Handle(fmt.Sprintf("/%s%s/", topicsPath, "bycommunity"), cors.Middleware(topicByCommunityHandler))
 }
